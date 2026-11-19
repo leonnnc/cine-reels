@@ -1,0 +1,16 @@
+{
+  "name": "cine-reels",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Buscador personal de películas encontradas en reels de Facebook. HTML5, CSS3 y JavaScript sin dependencias.",
+  "scripts": {
+    "start": "node server/serve.mjs",
+    "dev": "node server/serve.mjs",
+    "test": "node test/ejecutar.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}

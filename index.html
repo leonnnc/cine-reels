@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CineReels · Buscador de películas en reels de Facebook</title>
+<meta name="description" content="Catálogo local con buscador de películas encontradas en reels de Facebook. HTML5, CSS3 y JavaScript puro.">
+<meta name="theme-color" content="#0a0b10">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%237c5cff'/%3E%3Cpath d='M38 30l34 20-34 20z' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<a class="saltar" href="#resultados">Saltar a resultados</a>
+
+<header class="topbar">
+  <div class="contenedor topbar-fila">
+    <a class="marca" href="./" aria-label="CineReels, inicio">
+      <span class="marca-icono" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M10 9.5l5 2.5-5 2.5z" fill="currentColor" stroke="none"/></svg>
+      </span>
+      <span class="marca-texto">Cine<strong>Reels</strong></span>
+    </a>
+
+    <form class="buscador" id="form-busqueda" role="search" autocomplete="off">
+      <svg class="buscador-icono" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input
+        id="q"
+        type="search"
+        name="q"
+        placeholder="Busca por título, género, actor, etiqueta o año…"
+        aria-label="Buscar películas"
+        aria-describedby="pista-busqueda"
+        spellcheck="false"
+        enterkeyhint="search">
+      <kbd class="kbd" aria-hidden="true">/</kbd>
+      <button type="button" class="limpiar-q" id="limpiar-q" hidden aria-label="Limpiar búsqueda">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </form>
+
+    <div class="topbar-acciones">
+      <button type="button" class="btn btn-fantasma" id="abrir-catalogo">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        <span>Catálogo</span>
+      </button>
+      <button type="button" class="btn btn-primario" id="abrir-nueva">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        <span>Añadir reel</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="contenedor">
+
+  <section class="panel-filtros" aria-label="Filtros y orden">
+    <div class="filtros-fila">
+      <div class="chips" id="chips-generos" role="group" aria-label="Filtrar por género"></div>
+
+      <div class="filtros-controles">
+        <label class="campo-select">
+          <span>Año</span>
+          <select id="filtro-anio">
+            <option value="">Todos</option>
+          </select>
+        </label>
+
+        <label class="campo-select">
+          <span>Duración</span>
+          <select id="filtro-duracion">
+            <option value="">Cualquiera</option>
+            <option value="corto">Menos de 90 min</option>
+            <option value="media">90 a 130 min</option>
+            <option value="larga">Más de 130 min</option>
+          </select>
+        </label>
+
+        <label class="campo-select">
+          <span>Ordenar</span>
+          <select id="orden">
+            <option value="relevancia">Relevancia</option>
+            <option value="recientes">Más recientes</option>
+            <option value="titulo">Título (A–Z)</option>
+            <option value="puntuacion">Mejor puntuadas</option>
+            <option value="duracion">Duración</option>
+          </select>
+        </label>
+
+        <label class="interruptor">
+          <input type="checkbox" id="solo-reel">
+          <span class="interruptor-ui" aria-hidden="true"></span>
+          <span class="interruptor-texto">Con reel</span>
+        </label>
+
+        <label class="interruptor">
+          <input type="checkbox" id="solo-favoritos">
+          <span class="interruptor-ui" aria-hidden="true"></span>
+          <span class="interruptor-texto">Favoritas</span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <section id="resultados" aria-labelledby="titulo-resultados">
+    <div class="resultados-cabecera">
+      <div>
+        <h1 id="titulo-resultados" class="resultados-titulo">Películas en reels</h1>
+        <p class="resultados-sub" id="contador" aria-live="polite" aria-atomic="true">Cargando catálogo…</p>
+      </div>
+      <div class="resultados-acciones">
+        <span class="tiempo" id="tiempo" hidden></span>
+        <button type="button" class="btn btn-mini" id="limpiar-todo" hidden>Limpiar filtros</button>
+      </div>
+    </div>
+
+    <p id="pista-busqueda" class="sr-only">Escribe para filtrar el catálogo. Pulsa la barra inclinada para enfocar el buscador y Escape para limpiarlo.</p>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="vacio" id="vacio" hidden>
+      <div class="vacio-icono" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5M8.5 11h5"/></svg>
+      </div>
+      <h2 id="vacio-titulo">Sin resultados</h2>
+      <p id="vacio-texto">Prueba con otro título, género o quita algún filtro.</p>
+      <div class="vacio-acciones">
+        <button type="button" class="btn btn-primario" id="vacio-limpiar">Quitar filtros</button>
+        <button type="button" class="btn" id="vacio-nueva">Añadir una película</button>
+      </div>
+      <div class="sugerencias" id="sugerencias"></div>
+    </div>
+  </section>
+
+  <footer class="pie">
+    <p><strong>CineReels</strong> guarda tu catálogo en este navegador (localStorage). No enviamos tus datos a ningún servidor propio.</p>
+    <p class="pie-nota">Los reels se reproducen con el plugin oficial de Facebook, que puede usar sus propias cookies. Los metadatos de demostración son ilustrativos.</p>
+  </footer>
+</main>
+
+<!-- ===================== DETALLE ===================== -->
+<dialog class="modal modal-detalle" id="dlg-detalle" aria-labelledby="d-titulo">
+  <div class="modal-cabecera">
+    <h2 id="d-titulo" class="sr-only">Detalle de la película</h2>
+    <button type="button" class="cerrar" data-cerrar aria-label="Cerrar detalle">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div class="detalle" id="d-contenido"></div>
+</dialog>
+
+<!-- ===================== FORMULARIO ===================== -->
+<dialog class="modal modal-form" id="dlg-form" aria-labelledby="f-titulo-modal">
+  <form id="form-pelicula" novalidate>
+    <div class="modal-cabecera">
+      <h2 id="f-titulo-modal">Añadir película</h2>
+      <button type="button" class="cerrar" data-cerrar aria-label="Cerrar formulario">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-cuerpo">
+      <input type="hidden" id="f-id">
+
+      <div class="campo campo-ancho">
+        <label for="f-reel">Enlace del reel de Facebook</label>
+        <div class="entrada-con-accion">
+          <input type="url" id="f-reel" placeholder="https://www.facebook.com/reel/1403164165219302" inputmode="url" spellcheck="false">
+          <button type="button" class="btn btn-mini" id="f-analizar">Analizar</button>
+        </div>
+        <p class="ayuda" id="f-reel-estado">Acepta enlaces <code>/reel/…</code>, <code>/watch/?v=…</code>, <code>/videos/…</code> y <code>fb.watch</code>.</p>
+      </div>
+
+      <div class="campo campo-ancho" id="f-preview-envoltura" hidden>
+        <div class="preview-reel" id="f-preview"></div>
+      </div>
+
+      <div class="campo campo-ancho">
+        <label for="f-titulo">Título <span class="req" aria-hidden="true">*</span></label>
+        <input type="text" id="f-titulo" required maxlength="120" placeholder="El título que aparece en el reel">
+      </div>
+
+      <div class="campo">
+        <label for="f-titulo-original">Título original</label>
+        <input type="text" id="f-titulo-original" maxlength="120" placeholder="Opcional">
+      </div>
+
+      <div class="campo">
+        <label for="f-anio">Año</label>
+        <input type="number" id="f-anio" min="1888" max="2100" step="1" placeholder="2024" inputmode="numeric">
+      </div>
+
+      <div class="campo">
+        <label for="f-duracion">Duración (min)</label>
+        <input type="number" id="f-duracion" min="1" max="600" step="1" placeholder="105" inputmode="numeric">
+      </div>
+
+      <div class="campo">
+        <label for="f-puntuacion">Puntuación (0–10)</label>
+        <input type="number" id="f-puntuacion" min="0" max="10" step="0.1" placeholder="8.2" inputmode="decimal">
+      </div>
+
+      <div class="campo">
+        <label for="f-generos">Géneros</label>
+        <input type="text" id="f-generos" placeholder="Ciencia ficción, Drama" list="lista-generos">
+        <datalist id="lista-generos"></datalist>
+      </div>
+
+      <div class="campo">
+        <label for="f-tags">Etiquetas</label>
+        <input type="text" id="f-tags" placeholder="escena final, joya oculta" >
+      </div>
+
+      <div class="campo">
+        <label for="f-director">Dirección</label>
+        <input type="text" id="f-director" maxlength="80">
+      </div>
+
+      <div class="campo">
+        <label for="f-reparto">Reparto</label>
+        <input type="text" id="f-reparto" placeholder="Separado por comas">
+      </div>
+
+      <div class="campo campo-ancho">
+        <label for="f-poster">Póster (URL)</label>
+        <input type="url" id="f-poster" placeholder="https://… (opcional, si no se usa un degradado)">
+      </div>
+
+      <div class="campo campo-ancho">
+        <label for="f-sinopsis">Sinopsis</label>
+        <textarea id="f-sinopsis" rows="3" maxlength="600" placeholder="De qué trata, por qué la guardaste…"></textarea>
+      </div>
+
+      <div class="campo campo-ancho fila-checks">
+        <label class="check"><input type="checkbox" id="f-favorito"> <span>Marcar como favorita</span></label>
+        <label class="check"><input type="checkbox" id="f-visto"> <span>Ya la he visto</span></label>
+      </div>
+
+      <p class="error-form" id="f-error" role="alert" hidden></p>
+    </div>
+
+    <div class="modal-pie">
+      <button type="button" class="btn" data-cerrar>Cancelar</button>
+      <button type="submit" class="btn btn-primario" id="f-guardar">Guardar película</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ===================== CATÁLOGO ===================== -->
+<dialog class="modal modal-catalogo" id="dlg-catalogo" aria-labelledby="c-titulo-modal">
+  <div class="modal-cabecera">
+    <h2 id="c-titulo-modal">Catálogo</h2>
+    <button type="button" class="cerrar" data-cerrar aria-label="Cerrar catálogo">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+
+  <div class="modal-cuerpo">
+    <div class="stats" id="c-stats"></div>
+
+    <h3 class="bloque-titulo">Datos</h3>
+    <p class="ayuda">Tu catálogo vive solo en este navegador. Expórtalo para tener copia o pasarlo a otro equipo.</p>
+    <div class="fila-botones">
+      <button type="button" class="btn" id="c-exportar">Exportar JSON</button>
+      <label class="btn" for="c-importar">Importar JSON</label>
+      <input type="file" id="c-importar" accept="application/json,.json" hidden>
+      <button type="button" class="btn btn-peligro" id="c-vaciar">Vaciar catálogo</button>
+      <button type="button" class="btn" id="c-demo">Restaurar demo</button>
+    </div>
+
+    <h3 class="bloque-titulo">Puente con Facebook (opcional)</h3>
+    <p class="ayuda">
+      El <em>oEmbed</em> de Meta exige un <code>access_token</code> de aplicación y no debe ir en el navegador.
+      Arranca el servidor incluido (<code>node server/serve.mjs</code>) y aquí solo configuras la ruta del proxy.
+      Sin proxy, el sistema funciona igual: pegas el enlace y los datos a mano.
+    </p>
+    <div class="campo">
+      <label for="c-endpoint">Ruta del proxy oEmbed</label>
+      <input type="text" id="c-endpoint" placeholder="/api/oembed" spellcheck="false">
+    </div>
+    <div class="fila-botones">
+      <button type="button" class="btn" id="c-guardar-endpoint">Guardar</button>
+      <button type="button" class="btn" id="c-probar-endpoint">Probar conexión</button>
+    </div>
+    <p class="ayuda" id="c-estado-endpoint"></p>
+
+    <h3 class="bloque-titulo">Qué se puede y qué no</h3>
+    <ul class="lista-limites">
+      <li><strong>Sí:</strong> incrustar reels públicos con el plugin oficial y leer sus datos con oEmbed.</li>
+      <li><strong>Sí:</strong> buscar dentro de tu propio catálogo con puntuación y filtros.</li>
+      <li><strong>No:</strong> buscar reels de terceros por palabra clave; la Graph API no expone un buscador de reels.</li>
+      <li><strong>No:</strong> raspar HTML de Facebook: rompe sus términos y el código deja de funcionar a las semanas.</li>
+    </ul>
+  </div>
+
+  <div class="modal-pie">
+    <button type="button" class="btn btn-primario" data-cerrar>Listo</button>
+  </div>
+</dialog>
+
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
